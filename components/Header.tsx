@@ -1,5 +1,5 @@
 "use client"
-
+// rikukinobuhara
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 
@@ -19,7 +19,7 @@ export function Header({ userType, setUserType, drawingMode, setDrawingMode, cle
         <h1 className="text-2xl font-bold">SkyArea10</h1>
         <div className="flex items-center space-x-4">
           <Select value={userType} onValueChange={(value: any) => setUserType(value)}>
-            <SelectTrigger className="w-[180px] text-black">
+            <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select user type" />
             </SelectTrigger>
             <SelectContent>
@@ -57,3 +57,4 @@ export function Header({ userType, setUserType, drawingMode, setDrawingMode, cle
 }
 
 // ogasho2
+
