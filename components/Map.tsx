@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { GoogleMap, DrawingManager, Polygon, Polyline, Marker } from '@react-google-maps/api';
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/components/ui/use-toast";
 
 const mapContainerStyle = {
   width: '100%',
@@ -18,6 +18,7 @@ type MapProps = {
   userType: 'municipality' | 'operator' | 'resident';
   drawingMode: google.maps.drawing.OverlayType | null;
   setDrawingMode: (mode: google.maps.drawing.OverlayType | null) => void;
+  onClearOverlays: () => void;  // 追加
 };
 
 type Overlay = {
@@ -43,7 +44,7 @@ const defaultPolylineOptions: google.maps.PolylineOptions = {
   zIndex: 1,
 };
 
-export default function Map({ userType, drawingMode, setDrawingMode }: MapProps) {
+export default function Map({ userType, drawingMode, setDrawingMode,onClearOverlays }: MapProps) {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [drawingManager, setDrawingManager] = useState<google.maps.drawing.DrawingManager | null>(null);
   const [overlays, setOverlays] = useState<Overlay[]>([]);
@@ -108,6 +109,7 @@ export default function Map({ userType, drawingMode, setDrawingMode }: MapProps)
   };
 
   const clearOverlays = useCallback(() => {
+    console.log("clearOverlays関数が実行されました");
     overlays.forEach(({ overlay }) => overlay.setMap(null));
     setOverlays([]);
     toast({
@@ -116,7 +118,11 @@ export default function Map({ userType, drawingMode, setDrawingMode }: MapProps)
     })
   }, [overlays, toast]);
 
-  return (
+  useEffect(() => {
+    onClearOverlays = clearOverlays;
+  }, [clearOverlays, onClearOverlays]);
+
+  return (     
     <GoogleMap
       mapContainerStyle={mapContainerStyle}
       center={center}

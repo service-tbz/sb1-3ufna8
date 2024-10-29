@@ -14,10 +14,11 @@ type HeaderProps = {
   clearOverlays: () => void; // 全てのオーバーレイを削除する関数
   isLoaded: boolean; // マップが読み込まれたかを示すフラグ
   onConfirmDrawing: () => void; // 描画を確定する関数
+  onClearOverlays: () => void;  // 追加
 };
 
 // Headerコンポーネントの定義
-export function Header({ userType, setUserType, drawingMode, setDrawingMode, clearOverlays, isLoaded }: HeaderProps) {
+export function Header({ userType, setUserType, drawingMode, setDrawingMode, clearOverlays, isLoaded, onClearOverlays  }: HeaderProps) {
   return (
     // ヘッダーのスタイリング
     <header className="bg-primary text-primary-foreground p-4">
@@ -27,7 +28,7 @@ export function Header({ userType, setUserType, drawingMode, setDrawingMode, cle
         <div className="flex items-center space-x-4">
           {/* ユーザータイプ選択のセレクトメニュー */}
           <Select value={userType} onValueChange={(value: 'municipality' | 'operator' | 'resident') => setUserType(value)}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] text-black">
               <SelectValue placeholder="Select user type" />
             </SelectTrigger>
             <SelectContent>
@@ -80,7 +81,7 @@ export function Header({ userType, setUserType, drawingMode, setDrawingMode, cle
               {/* 全てのオーバーレイをクリアするボタン */}
               <Button
                 variant="destructive"
-                onClick={clearOverlays} // 全てのオーバーレイを削除する関数を実行
+                onClick={onClearOverlays} // 全てのオーバーレイを削除する関数を実行
               >
                 Clear All
               </Button>
