@@ -17,6 +17,12 @@ type HeaderProps = {
 
 // Headerコンポーネントの定義
 export function Header({ userType, setUserType, drawingMode, setDrawingMode, isLoaded, onClearOverlays  }: HeaderProps) {
+  const handleClearAll = () => {
+    if (window.confirm('全ての描画された要素を削除しますか？\nこの操作は取り消せません。')) {
+      onClearOverlays();
+    }
+  };
+
   return (
     // ヘッダーのスタイリング
     <header className="bg-primary text-primary-foreground p-4">
@@ -70,7 +76,7 @@ export function Header({ userType, setUserType, drawingMode, setDrawingMode, isL
               {/* 全てのオーバーレイをクリアするボタン */}
               <Button
                 variant="destructive"
-                onClick={onClearOverlays} // 全てのオーバーレイを削除する関数を実行
+                onClick={handleClearAll}
               >
                 Clear All
               </Button>
