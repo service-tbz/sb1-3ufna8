@@ -30,6 +30,44 @@ export function Header({ userType, setUserType, drawingMode, setDrawingMode, isL
         <h1 className="text-2xl font-bold">SkyArea10</h1> {/* アプリのタイトル */}
 
         <div className="flex items-center space-x-4">
+          {/* カスタムアニメーションのキーフレームを追加 */}
+          <style jsx global>{`
+            @keyframes slow-ping {
+              75%, 100% {
+                transform: scale(2);
+                opacity: 0;
+              }
+            }
+            .animate-slow-ping {
+              animation: slow-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+            }
+          `}</style>
+
+          {/* モードインジケーター */}
+          <div className={`
+            transition-all duration-200 ease-in-out
+            px-3 py-1.5 rounded-full text-sm font-medium
+            flex items-center gap-2
+            ${drawingMode 
+              ? 'bg-primary-foreground text-primary'
+              : 'bg-green-100 text-green-800 border border-green-300'}
+          `}>
+            {drawingMode ? (
+              <>
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full bg-red-500 rounded-full opacity-75 animate-slow-ping"/>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"/>
+                </span>
+                {userType === 'municipality' ? '禁止区域描画' : '経路描画'}
+              </>
+            ) : (
+              <>
+                <span className="inline-block w-2 h-2 bg-green-500 rounded-full"/>
+                操作モード
+              </>
+            )}
+          </div>
+
           {/* ユーザータイプ選択のセレクトメニュー */}
           <Select value={userType} onValueChange={(value: 'municipality' | 'operator' | 'resident') => setUserType(value)}>
             <SelectTrigger className="w-[180px] text-black">
@@ -43,7 +81,7 @@ export function Header({ userType, setUserType, drawingMode, setDrawingMode, isL
             </SelectContent>
           </Select>
 
-          {/* isLoadedがtrueで、userTypeが'municipality'または'operator'の場合に表示 */}
+          {/* 描画関連のボタンはmunicipalityとoperatorのみに表示 */}
           {isLoaded && (userType === 'municipality' || userType === 'operator') && (
             <>
               {/* userTypeに応じた描画モードを設定するボタン */}
@@ -72,15 +110,17 @@ export function Header({ userType, setUserType, drawingMode, setDrawingMode, isL
               >
                 Stop Drawing
               </Button>
-
-              {/* 全てのオーバーレイをクリアするボタン */}
-              <Button
-                variant="destructive"
-                onClick={handleClearAll}
-              >
-                Clear All
-              </Button>
             </>
+          )}
+
+          {/* Clear Allボタンは全てのユーザータイプで表示 */}
+          {isLoaded && (
+            <Button
+              variant="destructive"
+              onClick={handleClearAll}
+            >
+              Clear All
+            </Button>
           )}
         </div>
       </div>
