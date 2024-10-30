@@ -11,14 +11,12 @@ type HeaderProps = {
   setUserType: (type: 'municipality' | 'operator' | 'resident') => void; // ユーザータイプを設定する関数
   drawingMode: google.maps.drawing.OverlayType | null; // 現在の描画モード
   setDrawingMode: (mode: google.maps.drawing.OverlayType | null) => void; // 描画モードを設定する関数
-  clearOverlays: () => void; // 全てのオーバーレイを削除する関数
   isLoaded: boolean; // マップが読み込まれたかを示すフラグ
-  onConfirmDrawing: () => void; // 描画を確定する関数
   onClearOverlays: () => void;  // 追加
 };
 
 // Headerコンポーネントの定義
-export function Header({ userType, setUserType, drawingMode, setDrawingMode, clearOverlays, isLoaded, onClearOverlays  }: HeaderProps) {
+export function Header({ userType, setUserType, drawingMode, setDrawingMode, isLoaded, onClearOverlays  }: HeaderProps) {
   return (
     // ヘッダーのスタイリング
     <header className="bg-primary text-primary-foreground p-4">
@@ -68,15 +66,6 @@ export function Header({ userType, setUserType, drawingMode, setDrawingMode, cle
               >
                 Stop Drawing
               </Button>
-
-              {/* 描画を確定するボタン
-              {drawingMode && (
-              <Button
-                variant="outline"
-                onClick={onConfirmDrawing} // 描画を確定する関数を実行
-              >
-                Confirm
-              </Button> */}
 
               {/* 全てのオーバーレイをクリアするボタン */}
               <Button
