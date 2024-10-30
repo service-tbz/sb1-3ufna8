@@ -4,14 +4,14 @@ import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { MapContainer } from '@/components/MapContainer';
 import { Header } from '@/components/Header';
-import { useJsApiLoader } from '@react-google-maps/api';
+import { useJsApiLoader, Libraries } from '@react-google-maps/api';
 
 const Map = dynamic(() => import('@/components/Map'), {
   loading: () => <p>Loading map...</p>,
   ssr: false
 });
 
-const libraries: ("drawing" | "geometry" | "localContext" | "places" | "visualization")[] = ["drawing"];
+const libraries: Libraries = ["drawing"];
 
 export default function Home() {
   const [userType, setUserType] = useState<'municipality' | 'operator' | 'resident'>('municipality');
