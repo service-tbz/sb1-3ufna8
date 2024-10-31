@@ -18,7 +18,7 @@ type MapProps = {
   userType: 'municipality' | 'operator' | 'resident';
   drawingMode: google.maps.drawing.OverlayType | null;
   setDrawingMode: (mode: google.maps.drawing.OverlayType | null) => void;
-  onClearOverlays: () => void;  // 追加
+  onClearOverlays: (fn: () => void) => void;
 };
 
 type Overlay = {
@@ -44,7 +44,7 @@ const defaultPolylineOptions: google.maps.PolylineOptions = {
   zIndex: 1,
 };
 
-export default function Map({ userType, drawingMode, setDrawingMode,onClearOverlays }: MapProps) {
+export default function Map({ userType, drawingMode, setDrawingMode, onClearOverlays }: MapProps) {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [drawingManager, setDrawingManager] = useState<google.maps.drawing.DrawingManager | null>(null);
   const [overlays, setOverlays] = useState<Overlay[]>([]);
@@ -77,17 +77,36 @@ export default function Map({ userType, drawingMode, setDrawingMode,onClearOverl
   }, [map, drawingMode, userType]);
 
   const handleOverlayComplete = (event: google.maps.drawing.OverlayCompleteEvent) => {
+    console.log("オーバーレイ作成イベント:", event.type);
+
+    let overlay: google.maps.Polygon | google.maps.Polyline | google.maps.Marker;
+    
+    if (event.type === google.maps.drawing.OverlayType.POLYGON) {
+      overlay = event.overlay as google.maps.Polygon;
+    } else if (event.type === google.maps.drawing.OverlayType.POLYLINE) {
+      overlay = event.overlay as google.maps.Polyline;
+    } else {
+      overlay = event.overlay as google.maps.Marker;
+    }
+
+    overlay.setMap(map);
+
     const newOverlay: Overlay = {
       type: event.type,
-      overlay: event.overlay,
+      overlay: overlay,
       options: event.type === google.maps.drawing.OverlayType.POLYGON
         ? defaultPolygonOptions
         : event.type === google.maps.drawing.OverlayType.POLYLINE
         ? defaultPolylineOptions
-        : {} // For markers, we don't need specific options
+        : {}
     };
 
-    setOverlays(prevOverlays => [...prevOverlays, newOverlay]);
+    console.log("新しいオーバーレイを追加:", newOverlay);
+
+    setOverlays(prevOverlays => {
+      console.log("現在のオーバーレイ:", prevOverlays);
+      return [...prevOverlays, newOverlay];
+    });
 
     if (event.type === google.maps.drawing.OverlayType.POLYGON) {
       toast({
@@ -110,16 +129,35 @@ export default function Map({ userType, drawingMode, setDrawingMode,onClearOverl
 
   const clearOverlays = useCallback(() => {
     console.log("clearOverlays関数が実行されました");
-    overlays.forEach(({ overlay }) => overlay.setMap(null));
+    console.log("現在のオーバーレイ数:", overlays.length);
+
+    overlays.forEach(({ overlay, type }) => {
+      console.log("削除するオーバーレイのタイプ:", type);
+      overlay.setMap(null);
+    });
+
+    if (drawingManager) {
+      drawingManager.setMap(null);
+      const newDrawingManager = new window.google.maps.drawing.DrawingManager({
+        drawingMode: null,
+        drawingControl: false,
+        polygonOptions: defaultPolygonOptions,
+        polylineOptions: defaultPolylineOptions,
+      });
+      newDrawingManager.setMap(map);
+      setDrawingManager(newDrawingManager);
+    }
+
     setOverlays([]);
+    
     toast({
       title: "Cleared",
       description: "All overlays have been removed from the map.",
-    })
-  }, [overlays, toast]);
+    });
+  }, [overlays, toast, drawingManager, map]);
 
   useEffect(() => {
-    onClearOverlays = clearOverlays;
+    onClearOverlays(clearOverlays);
   }, [clearOverlays, onClearOverlays]);
 
   return (     
@@ -130,34 +168,16 @@ export default function Map({ userType, drawingMode, setDrawingMode,onClearOverl
       onLoad={onLoad}
       onUnmount={onUnmount}
     >
-      {overlays.map((overlay, index) => {
-        if (overlay.type === google.maps.drawing.OverlayType.POLYGON) {
-          return (
-            <Polygon
-              key={`polygon-${index}`}
-              path={(overlay.overlay as google.maps.Polygon).getPath()}
-              options={overlay.options as google.maps.PolygonOptions}
-            />
-          );
-        } else if (overlay.type === google.maps.drawing.OverlayType.POLYLINE) {
-          return (
-            <Polyline
-              key={`polyline-${index}`}
-              path={(overlay.overlay as google.maps.Polyline).getPath()}
-              options={overlay.options as google.maps.PolylineOptions}
-            />
-          );
-        } else if (overlay.type === google.maps.drawing.OverlayType.MARKER) {
-          return (
-            <Marker
-              key={`marker-${index}`}
-              position={(overlay.overlay as google.maps.Marker).getPosition()}
-              options={overlay.options as google.maps.MarkerOptions}
-            />
-          );
-        }
-        return null;
-      })}
+      {drawingManager && (
+        <DrawingManager
+          drawingMode={drawingMode}
+          options={{
+            drawingControl: false,
+            polygonOptions: defaultPolygonOptions,
+            polylineOptions: defaultPolylineOptions,
+          }}
+        />
+      )}
     </GoogleMap>
   );
 }

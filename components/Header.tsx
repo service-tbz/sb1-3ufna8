@@ -11,14 +11,18 @@ type HeaderProps = {
   setUserType: (type: 'municipality' | 'operator' | 'resident') => void; // ユーザータイプを設定する関数
   drawingMode: google.maps.drawing.OverlayType | null; // 現在の描画モード
   setDrawingMode: (mode: google.maps.drawing.OverlayType | null) => void; // 描画モードを設定する関数
-  clearOverlays: () => void; // 全てのオーバーレイを削除する関数
   isLoaded: boolean; // マップが読み込まれたかを示すフラグ
-  onConfirmDrawing: () => void; // 描画を確定する関数
   onClearOverlays: () => void;  // 追加
 };
 
 // Headerコンポーネントの定義
-export function Header({ userType, setUserType, drawingMode, setDrawingMode, clearOverlays, isLoaded, onClearOverlays  }: HeaderProps) {
+export function Header({ userType, setUserType, drawingMode, setDrawingMode, isLoaded, onClearOverlays  }: HeaderProps) {
+  const handleClearAll = () => {
+    if (window.confirm('全ての描画された要素を削除しますか？\nこの操作は取り消せません。')) {
+      onClearOverlays();
+    }
+  };
+
   return (
     // ヘッダーのスタイリング
     <header className="bg-primary text-primary-foreground p-4">
@@ -26,6 +30,44 @@ export function Header({ userType, setUserType, drawingMode, setDrawingMode, cle
         <h1 className="text-2xl font-bold">SkyArea10</h1> {/* アプリのタイトル */}
 
         <div className="flex items-center space-x-4">
+          {/* カスタムアニメーションのキーフレームを追加 */}
+          <style jsx global>{`
+            @keyframes slow-ping {
+              75%, 100% {
+                transform: scale(2);
+                opacity: 0;
+              }
+            }
+            .animate-slow-ping {
+              animation: slow-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+            }
+          `}</style>
+
+          {/* モードインジケーター */}
+          <div className={`
+            transition-all duration-200 ease-in-out
+            px-3 py-1.5 rounded-full text-sm font-medium
+            flex items-center gap-2
+            ${drawingMode 
+              ? 'bg-primary-foreground text-primary'
+              : 'bg-green-100 text-green-800 border border-green-300'}
+          `}>
+            {drawingMode ? (
+              <>
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full bg-red-500 rounded-full opacity-75 animate-slow-ping"/>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"/>
+                </span>
+                {userType === 'municipality' ? '禁止区域描画' : '経路描画'}
+              </>
+            ) : (
+              <>
+                <span className="inline-block w-2 h-2 bg-green-500 rounded-full"/>
+                操作モード
+              </>
+            )}
+          </div>
+
           {/* ユーザータイプ選択のセレクトメニュー */}
           <Select value={userType} onValueChange={(value: 'municipality' | 'operator' | 'resident') => setUserType(value)}>
             <SelectTrigger className="w-[180px] text-black">
@@ -39,7 +81,7 @@ export function Header({ userType, setUserType, drawingMode, setDrawingMode, cle
             </SelectContent>
           </Select>
 
-          {/* isLoadedがtrueで、userTypeが'municipality'または'operator'の場合に表示 */}
+          {/* 描画関連のボタンはmunicipalityとoperatorのみに表示 */}
           {isLoaded && (userType === 'municipality' || userType === 'operator') && (
             <>
               {/* userTypeに応じた描画モードを設定するボタン */}
@@ -68,24 +110,17 @@ export function Header({ userType, setUserType, drawingMode, setDrawingMode, cle
               >
                 Stop Drawing
               </Button>
-
-              {/* 描画を確定するボタン
-              {drawingMode && (
-              <Button
-                variant="outline"
-                onClick={onConfirmDrawing} // 描画を確定する関数を実行
-              >
-                Confirm
-              </Button> */}
-
-              {/* 全てのオーバーレイをクリアするボタン */}
-              <Button
-                variant="destructive"
-                onClick={onClearOverlays} // 全てのオーバーレイを削除する関数を実行
-              >
-                Clear All
-              </Button>
             </>
+          )}
+
+          {/* Clear Allボタンは全てのユーザータイプで表示 */}
+          {isLoaded && (
+            <Button
+              variant="destructive"
+              onClick={handleClearAll}
+            >
+              Clear All
+            </Button>
           )}
         </div>
       </div>

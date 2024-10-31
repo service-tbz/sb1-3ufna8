@@ -4,18 +4,19 @@ import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { MapContainer } from '@/components/MapContainer';
 import { Header } from '@/components/Header';
-import { useJsApiLoader } from '@react-google-maps/api';
+import { useJsApiLoader, Libraries } from '@react-google-maps/api';
 
 const Map = dynamic(() => import('@/components/Map'), {
   loading: () => <p>Loading map...</p>,
   ssr: false
 });
 
-const libraries: ("drawing" | "geometry" | "localContext" | "places" | "visualization")[] = ["drawing"];
+const libraries: Libraries = ["drawing"];
 
 export default function Home() {
   const [userType, setUserType] = useState<'municipality' | 'operator' | 'resident'>('municipality');
   const [drawingMode, setDrawingMode] = useState<google.maps.drawing.OverlayType | null>(null);
+  const [clearFn, setClearFn] = useState<(() => void) | null>(null);
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -23,10 +24,17 @@ export default function Home() {
     libraries,
   });
 
-  const clearOverlays = useCallback(() => {
-    // This function will be passed to the Map component
-    // We'll implement it in the Map component
+  const handleSetClearFn = useCallback((fn: () => void) => {
+    console.log("Clear function registered");
+    setClearFn(() => fn);
   }, []);
+
+  const handleClearOverlays = useCallback(() => {
+    console.log("Executing clear function");
+    if (clearFn) {
+      clearFn();
+    }
+  }, [clearFn]);
 
   return (
     <div className="flex flex-col h-screen">
@@ -35,7 +43,7 @@ export default function Home() {
         setUserType={setUserType} 
         drawingMode={drawingMode}
         setDrawingMode={setDrawingMode}
-        clearOverlays={clearOverlays}
+        onClearOverlays={handleClearOverlays}
         isLoaded={isLoaded}
       />
       <MapContainer>
@@ -44,6 +52,7 @@ export default function Home() {
             userType={userType} 
             drawingMode={drawingMode}
             setDrawingMode={setDrawingMode}
+            onClearOverlays={handleSetClearFn}
           />
         ) : (
           <div className="flex items-center justify-center h-full">
