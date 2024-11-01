@@ -16,7 +16,7 @@ type HeaderProps = {
 };
 
 // Headerコンポーネントの定義
-export function Header({ userType, setUserType, drawingMode, setDrawingMode, clearOverlays, isLoaded }: HeaderProps) {
+export function Header({ userType, setUserType, drawingMode, setDrawingMode, clearOverlays, isLoaded, onConfirmDrawing }: HeaderProps) {
   return (
     // ヘッダーのスタイリング
     <header className="bg-primary text-primary-foreground p-4">
@@ -67,14 +67,15 @@ export function Header({ userType, setUserType, drawingMode, setDrawingMode, cle
                 Stop Drawing
               </Button>
 
-              {/* 描画を確定するボタン
+              {/* 描画を確定するボタン */}
               {drawingMode && (
-              <Button
-                variant="outline"
-                onClick={onConfirmDrawing} // 描画を確定する関数を実行
-              >
-                Confirm
-              </Button> */}
+                <Button
+                  variant="success" // スタイリングを適宜変更
+                  onClick={onConfirmDrawing} // 描画を確定する関数を実行
+                >
+                  Confirm
+                </Button>
+              )}
 
               {/* 全てのオーバーレイをクリアするボタン */}
               <Button

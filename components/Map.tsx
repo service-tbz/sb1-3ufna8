@@ -45,7 +45,6 @@ const defaultPolylineOptions: google.maps.PolylineOptions = {
 
 export default function Map({ userType, drawingMode, setDrawingMode }: MapProps) {
   const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [drawingManager, setDrawingManager] = useState<google.maps.drawing.DrawingManager | null>(null);
   const [overlays, setOverlays] = useState<Overlay[]>([]);
 
   const { toast } = useToast()
