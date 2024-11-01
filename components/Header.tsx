@@ -58,7 +58,11 @@ export function Header({ userType, setUserType, drawingMode, setDrawingMode, isL
                   <span className="absolute inline-flex h-full w-full bg-red-500 rounded-full opacity-75 animate-slow-ping"/>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"/>
                 </span>
-                {userType === 'municipality' ? '禁止区域描画' : '経路描画'}
+                {userType === 'municipality' 
+                  ? '禁止区域描画'
+                  : userType === 'operator'
+                    ? '経路描画'
+                    : 'マーカー配置'}
               </>
             ) : (
               <>
@@ -84,7 +88,6 @@ export function Header({ userType, setUserType, drawingMode, setDrawingMode, isL
           {/* 描画関連のボタンはmunicipalityとoperatorのみに表示 */}
           {isLoaded && (userType === 'municipality' || userType === 'operator') && (
             <>
-              {/* userTypeに応じた描画モードを設定するボタン */}
               <Button
                 variant={
                   drawingMode === (userType === 'municipality' 
@@ -92,21 +95,37 @@ export function Header({ userType, setUserType, drawingMode, setDrawingMode, isL
                     : google.maps.drawing.OverlayType.POLYLINE)
                     ? "secondary" 
                     : "outline"
-                } // ボタンのスタイルを描画モードに応じて変更
+                }
                 onClick={() => setDrawingMode(
                   userType === 'municipality' 
                     ? google.maps.drawing.OverlayType.POLYGON 
                     : google.maps.drawing.OverlayType.POLYLINE
-                )} // userTypeに応じて描画モードを設定
+                )}
               >
-                {/* userTypeに応じてボタンのラベルを変更 */}
                 Draw {userType === 'municipality' ? 'No-Fly Zone' : 'Flight Path'}
               </Button>
 
-              {/* 描画モードを解除するボタン */}
               <Button
                 variant="outline"
-                onClick={() => setDrawingMode(null)} // 描画モードをリセット
+                onClick={() => setDrawingMode(null)}
+              >
+                Stop Drawing
+              </Button>
+            </>
+          )}
+
+          {/* residentユーザー用のマーカー配置ボタン */}
+          {isLoaded && userType === 'resident' && (
+            <>
+              <Button
+                variant={drawingMode === google.maps.drawing.OverlayType.MARKER ? "secondary" : "outline"}
+                onClick={() => setDrawingMode(google.maps.drawing.OverlayType.MARKER)}
+              >
+                Put Marker
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setDrawingMode(null)}
               >
                 Stop Drawing
               </Button>

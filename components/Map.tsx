@@ -44,6 +44,11 @@ const defaultPolylineOptions: google.maps.PolylineOptions = {
   zIndex: 1,
 };
 
+const defaultMarkerOptions: google.maps.MarkerOptions = {
+  draggable: true,
+  clickable: true,
+};
+
 export default function Map({ userType, drawingMode, setDrawingMode, onClearOverlays }: MapProps) {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [drawingManager, setDrawingManager] = useState<google.maps.drawing.DrawingManager | null>(null);
@@ -68,6 +73,7 @@ export default function Map({ userType, drawingMode, setDrawingMode, onClearOver
         drawingControl: false,
         polygonOptions: defaultPolygonOptions,
         polylineOptions: defaultPolylineOptions,
+        markerOptions: defaultMarkerOptions,
       });
       newDrawingManager.setMap(map);
       setDrawingManager(newDrawingManager);
@@ -143,6 +149,7 @@ export default function Map({ userType, drawingMode, setDrawingMode, onClearOver
         drawingControl: false,
         polygonOptions: defaultPolygonOptions,
         polylineOptions: defaultPolylineOptions,
+        markerOptions: defaultMarkerOptions,
       });
       newDrawingManager.setMap(map);
       setDrawingManager(newDrawingManager);
@@ -175,6 +182,7 @@ export default function Map({ userType, drawingMode, setDrawingMode, onClearOver
             drawingControl: false,
             polygonOptions: defaultPolygonOptions,
             polylineOptions: defaultPolylineOptions,
+            markerOptions: defaultMarkerOptions,
           }}
         />
       )}
