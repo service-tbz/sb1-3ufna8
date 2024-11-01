@@ -19,6 +19,7 @@ type MapProps = {
   drawingMode: google.maps.drawing.OverlayType | null;
   setDrawingMode: (mode: google.maps.drawing.OverlayType | null) => void;
   onClearOverlays: (fn: () => void) => void;
+  setWarning: (warning: string | null) => void;
 };
 
 type Overlay = {
@@ -49,7 +50,7 @@ const defaultMarkerOptions: google.maps.MarkerOptions = {
   clickable: true,
 };
 
-export default function Map({ userType, drawingMode, setDrawingMode, onClearOverlays }: MapProps) {
+export default function Map({ userType, drawingMode, setDrawingMode, onClearOverlays, setWarning }: MapProps) {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [drawingManager, setDrawingManager] = useState<google.maps.drawing.DrawingManager | null>(null);
   const [overlays, setOverlays] = useState<Overlay[]>([]);
@@ -95,13 +96,10 @@ export default function Map({ userType, drawingMode, setDrawingMode, onClearOver
       const path = overlay.getPath();
       const isCrossingNoFlyZone = overlays.some(({ overlay: noFlyZone }) => {
         if (noFlyZone instanceof google.maps.Polygon) {
-          // Check if any point along the line segment intersects with the polygon
           for (let i = 0; i < path.getLength() - 1; i++) {
             const start = path.getAt(i);
             const end = path.getAt(i + 1);
-            
-            // Check multiple points along the line segment
-            const numPoints = 10; // Number of points to check along the line
+            const numPoints = 10;
             for (let j = 0; j <= numPoints; j++) {
               const fraction = j / numPoints;
               const lat = start.lat() + (end.lat() - start.lat()) * fraction;
@@ -118,12 +116,11 @@ export default function Map({ userType, drawingMode, setDrawingMode, onClearOver
       });
 
       if (isCrossingNoFlyZone) {
-        toast({
-          title: "警告",
-          description: "飛行禁止区域であるため飛行経路に設定できません。",
-        });
+        setWarning("飛行禁止区域であるため飛行経路に設定できません。");
         overlay.setMap(null);
         return;
+      } else {
+        setWarning(null);
       }
     } else {
       overlay = event.overlay as google.maps.Marker;
