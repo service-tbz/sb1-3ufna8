@@ -19,6 +19,7 @@ type MapProps = {
   drawingMode: google.maps.drawing.OverlayType | null;
   setDrawingMode: (mode: google.maps.drawing.OverlayType | null) => void;
   onClearOverlays: (fn: () => void) => void;
+  setWarning: (warning: string | null) => void;
 };
 
 type Overlay = {
@@ -44,7 +45,12 @@ const defaultPolylineOptions: google.maps.PolylineOptions = {
   zIndex: 1,
 };
 
-export default function Map({ userType, drawingMode, setDrawingMode, onClearOverlays }: MapProps) {
+const defaultMarkerOptions: google.maps.MarkerOptions = {
+  draggable: true,
+  clickable: true,
+};
+
+export default function Map({ userType, drawingMode, setDrawingMode, onClearOverlays, setWarning }: MapProps) {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [drawingManager, setDrawingManager] = useState<google.maps.drawing.DrawingManager | null>(null);
   const [overlays, setOverlays] = useState<Overlay[]>([]);
@@ -68,6 +74,7 @@ export default function Map({ userType, drawingMode, setDrawingMode, onClearOver
         drawingControl: false,
         polygonOptions: defaultPolygonOptions,
         polylineOptions: defaultPolylineOptions,
+        markerOptions: defaultMarkerOptions,
       });
       newDrawingManager.setMap(map);
       setDrawingManager(newDrawingManager);
@@ -85,6 +92,36 @@ export default function Map({ userType, drawingMode, setDrawingMode, onClearOver
       overlay = event.overlay as google.maps.Polygon;
     } else if (event.type === google.maps.drawing.OverlayType.POLYLINE) {
       overlay = event.overlay as google.maps.Polyline;
+
+      const path = overlay.getPath();
+      const isCrossingNoFlyZone = overlays.some(({ overlay: noFlyZone }) => {
+        if (noFlyZone instanceof google.maps.Polygon) {
+          for (let i = 0; i < path.getLength() - 1; i++) {
+            const start = path.getAt(i);
+            const end = path.getAt(i + 1);
+            const numPoints = 10;
+            for (let j = 0; j <= numPoints; j++) {
+              const fraction = j / numPoints;
+              const lat = start.lat() + (end.lat() - start.lat()) * fraction;
+              const lng = start.lng() + (end.lng() - start.lng()) * fraction;
+              const point = new google.maps.LatLng(lat, lng);
+              
+              if (google.maps.geometry.poly.containsLocation(point, noFlyZone)) {
+                return true;
+              }
+            }
+          }
+        }
+        return false;
+      });
+
+      if (isCrossingNoFlyZone) {
+        setWarning("飛行禁止区域であるため飛行経路に設定できません。");
+        overlay.setMap(null);
+        return;
+      } else {
+        setWarning(null);
+      }
     } else {
       overlay = event.overlay as google.maps.Marker;
     }
@@ -143,6 +180,7 @@ export default function Map({ userType, drawingMode, setDrawingMode, onClearOver
         drawingControl: false,
         polygonOptions: defaultPolygonOptions,
         polylineOptions: defaultPolylineOptions,
+        markerOptions: defaultMarkerOptions,
       });
       newDrawingManager.setMap(map);
       setDrawingManager(newDrawingManager);
@@ -175,6 +213,7 @@ export default function Map({ userType, drawingMode, setDrawingMode, onClearOver
             drawingControl: false,
             polygonOptions: defaultPolygonOptions,
             polylineOptions: defaultPolylineOptions,
+            markerOptions: defaultMarkerOptions,
           }}
         />
       )}

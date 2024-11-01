@@ -11,12 +11,13 @@ const Map = dynamic(() => import('@/components/Map'), {
   ssr: false
 });
 
-const libraries: Libraries = ["drawing"];
+const libraries: Libraries = ["drawing", "geometry"];
 
 export default function Home() {
   const [userType, setUserType] = useState<'municipality' | 'operator' | 'resident'>('municipality');
   const [drawingMode, setDrawingMode] = useState<google.maps.drawing.OverlayType | null>(null);
   const [clearFn, setClearFn] = useState<(() => void) | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -45,6 +46,7 @@ export default function Home() {
         setDrawingMode={setDrawingMode}
         onClearOverlays={handleClearOverlays}
         isLoaded={isLoaded}
+        warning={warning}
       />
       <MapContainer>
         {isLoaded ? (
@@ -53,6 +55,7 @@ export default function Home() {
             drawingMode={drawingMode}
             setDrawingMode={setDrawingMode}
             onClearOverlays={handleSetClearFn}
+            setWarning={setWarning}
           />
         ) : (
           <div className="flex items-center justify-center h-full">
