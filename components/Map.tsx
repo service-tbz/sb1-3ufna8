@@ -91,6 +91,40 @@ export default function Map({ userType, drawingMode, setDrawingMode, onClearOver
       overlay = event.overlay as google.maps.Polygon;
     } else if (event.type === google.maps.drawing.OverlayType.POLYLINE) {
       overlay = event.overlay as google.maps.Polyline;
+
+      const path = overlay.getPath();
+      const isCrossingNoFlyZone = overlays.some(({ overlay: noFlyZone }) => {
+        if (noFlyZone instanceof google.maps.Polygon) {
+          // Check if any point along the line segment intersects with the polygon
+          for (let i = 0; i < path.getLength() - 1; i++) {
+            const start = path.getAt(i);
+            const end = path.getAt(i + 1);
+            
+            // Check multiple points along the line segment
+            const numPoints = 10; // Number of points to check along the line
+            for (let j = 0; j <= numPoints; j++) {
+              const fraction = j / numPoints;
+              const lat = start.lat() + (end.lat() - start.lat()) * fraction;
+              const lng = start.lng() + (end.lng() - start.lng()) * fraction;
+              const point = new google.maps.LatLng(lat, lng);
+              
+              if (google.maps.geometry.poly.containsLocation(point, noFlyZone)) {
+                return true;
+              }
+            }
+          }
+        }
+        return false;
+      });
+
+      if (isCrossingNoFlyZone) {
+        toast({
+          title: "警告",
+          description: "飛行禁止区域であるため飛行経路に設定できません。",
+        });
+        overlay.setMap(null);
+        return;
+      }
     } else {
       overlay = event.overlay as google.maps.Marker;
     }

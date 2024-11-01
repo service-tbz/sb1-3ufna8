@@ -11,7 +11,7 @@ const Map = dynamic(() => import('@/components/Map'), {
   ssr: false
 });
 
-const libraries: Libraries = ["drawing"];
+const libraries: Libraries = ["drawing", "geometry"];
 
 export default function Home() {
   const [userType, setUserType] = useState<'municipality' | 'operator' | 'resident'>('municipality');
