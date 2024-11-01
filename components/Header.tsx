@@ -1,7 +1,7 @@
 "use client"
 
 // 必要なコンポーネントをインポート
-
+import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 
@@ -17,10 +17,15 @@ type HeaderProps = {
 
 // Headerコンポーネントの定義
 export function Header({ userType, setUserType, drawingMode, setDrawingMode, isLoaded, onClearOverlays  }: HeaderProps) {
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
   const handleClearAll = () => {
-    if (window.confirm('全ての描画された要素を削除しますか？\nこの操作は取り消せません。')) {
-      onClearOverlays();
-    }
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirm = () => {
+    onClearOverlays();
+    setShowConfirmDialog(false);
   };
 
   return (
@@ -134,12 +139,37 @@ export function Header({ userType, setUserType, drawingMode, setDrawingMode, isL
 
           {/* Clear Allボタンは全てのユーザータイプで表示 */}
           {isLoaded && (
-            <Button
-              variant="destructive"
-              onClick={handleClearAll}
-            >
-              Clear All
-            </Button>
+            <>
+              <Button
+                variant="destructive"
+                onClick={handleClearAll}
+              >
+                Clear All
+              </Button>
+
+              {showConfirmDialog && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                  <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full mx-4">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">全ての要素を削除</h3>
+                    <p className="text-gray-600 mb-6">全ての描画された要素を削除しますか？<br/>この操作は取り消せません。</p>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowConfirmDialog(false)}
+                      >
+                        キャンセル
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={handleConfirm}
+                      >
+                        削除する
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
