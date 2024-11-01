@@ -1,6 +1,7 @@
 "use client"
 
 // 必要なコンポーネントをインポート
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 
@@ -91,3 +92,4 @@ export function Header({ userType, setUserType, drawingMode, setDrawingMode, cle
     </header>
   );
 }
+
