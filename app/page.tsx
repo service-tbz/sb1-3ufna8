@@ -1,15 +1,28 @@
-"use client"
+"use client";
 
-import { useState, useCallback } from 'react';
-import dynamic from 'next/dynamic';
+import React, { useState, useCallback, useRef, Suspense} from 'react';
+// import dynamic from 'next/dynamic';
 import { MapContainer } from '@/components/MapContainer';
 import { Header } from '@/components/Header';
 import { useJsApiLoader } from '@react-google-maps/api';
+import type { MapHandle, MapProps } from '@/components/Map';
 
-const Map = dynamic(() => import('@/components/Map'), {
-  loading: () => <p>Loading map...</p>,
-  ssr: false
-});
+
+
+
+// 動的に `Map` コンポーネントをインポートし、`ref` を渡せるように `forwardRef` でラップ
+// const DynamicMap = dynamic(() => import('@/components/Map').then((mod) => mod.Map), {
+//   ssr: false,
+//   loading: () => <p>Loading map...</p>,
+// });
+
+// const ForwardedMap = React.forwardRef<MapHandle, MapProps>((props, ref) => (
+//   <DynamicMap {...props} ref={ref} />
+// ));
+// ForwardedMap.displayName = 'ForwardedMap';
+
+// `React.lazy` を使用して `Map` コンポーネントをインポート
+const Map = React.lazy(() => import('@/components/Map'));
 
 const libraries: ("drawing" | "geometry" | "localContext" | "places" | "visualization")[] = ["drawing"];
 
@@ -23,9 +36,22 @@ export default function Home() {
     libraries,
   });
 
-  const clearOverlays = useCallback(() => {
-    // This function will be passed to the Map component
-    // We'll implement it in the Map component
+  const mapRef = useRef<MapHandle>(null);
+
+  const handleClearOverlays = useCallback(() => {
+    if (mapRef.current) {
+      mapRef.current.clearOverlays();
+    }
+  }, []);
+
+  const handleConfirmDrawing = useCallback(() => {
+    console.log('handleConfirmDrawing called');
+    if (mapRef.current) {
+      console.log('mapRef.current is defined');
+      mapRef.current.confirmDrawing();
+    } else {
+      console.log('mapRef.current is null');
+    }
   }, []);
 
   return (
@@ -35,16 +61,20 @@ export default function Home() {
         setUserType={setUserType} 
         drawingMode={drawingMode}
         setDrawingMode={setDrawingMode}
-        clearOverlays={clearOverlays}
+        clearOverlays={handleClearOverlays}
         isLoaded={isLoaded}
+        onConfirmDrawing={handleConfirmDrawing}
       />
       <MapContainer>
         {isLoaded ? (
+          <Suspense fallback={<div>Loading map...</div>}>
           <Map 
+            ref={mapRef} // `ref` を渡す
             userType={userType} 
             drawingMode={drawingMode}
             setDrawingMode={setDrawingMode}
           />
+        </Suspense>
         ) : (
           <div className="flex items-center justify-center h-full">
             <p>Loading map...</p>
